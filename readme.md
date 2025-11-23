@@ -3,7 +3,7 @@
 ## Introducción
 
 **ReadHub** es una plataforma digital creada para la comunidad fanática de los libros.  
-Su misión es ofrecer un **espacio seguro, confiable y eficiente** donde estudiantes puedan **comprar y vender libros** de manera sencilla.
+Su misión es ofrecer un **espacio seguro, confiable y eficiente** donde los usuarios puedan **comprar y vender libros** de manera sencilla.
 
 ---
 
