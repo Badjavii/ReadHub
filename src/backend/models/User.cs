@@ -1,78 +1,85 @@
 using System.Text.Json.Serialization;
-using System.Collections.Generic;
-using backend.models;
+using System;
 
 namespace backend.models
 {
     /**
      * @class User
-     * @brief Representa un perfil único de usuario en Booksy, que puede ser comprador y/o vendedor.
+     * @brief Representa un perfil único de usuario en ReadHub.
+     * 
+     * Los usuarios son anónimos: pueden comprar y vender libros simultáneamente sin distinción de roles.
+     * Solo se almacenan los datos mínimos necesarios para la autenticación y las transacciones.
      */
     public class User
     {
-        //**@brief # Datos personales con getters y setters.
+        /**
+         * @brief Identificador único del usuario en el sistema.
+         */
+        [JsonPropertyName("_id")]
+        public int Id { get; set; }
 
-        [JsonPropertyName("_email")]        //**@brief Correo del usuario.
+        /** 
+         * @brief Nombre de usuario único dentro del sistema.
+         */
+        [JsonPropertyName("_username")]
+        public string Username { get; set; }
+
+        /** 
+         * @brief Correo electrónico del usuario.
+         */
+        [JsonPropertyName("_email")]
         public string Email { get; set; }
 
-        [JsonPropertyName("_firstName")]    //**@brief Nombre del usuario.
-        public string FirstName { get; set; }
+        /**
+         * @brief Dirección de la wallet de Bitcoin asociada al usuario.
+         */
+        [JsonPropertyName("_walletAddress")]
+        public string WalletAddress { get; set; }
 
-        [JsonPropertyName("_lastName")]     //**@brief Apellido del usuario.
-        public string LastName { get; set; }
+        /**
+         * @brief Contraseña privada del usuario (no accesible directamente).
+         */
+        private string Password { get; set; }
 
-        [JsonPropertyName("_age")]          //**@brief Edad del usuario.
-        public int Age { get; set; }
-
-        [JsonPropertyName("_password")]     //**@brief Contraseña del usuario.
-        public string Password { get; set; }
-
-        [JsonPropertyName("_isSeller")]     //**@brief Rol del usuario.
-        public bool IsSeller { get; set; }
-
-        [JsonPropertyName("_sellerInfo")]   //**@brief Informacion del vendedor.
-        public SellerInfo? SellerInfo { get; set; }
-
-        [JsonPropertyName("_purchaseHistory")]
-        public List<Book> PurchaseHistory { get; set; } = new List<Book>();
-
-        //**@brief # Constructores.
-
-        //**@brief Constructor basico.
-        public User(string email, string firstName, string lastName, int age, string password)
+        /**
+         * @brief Constructor básico para inicializar un usuario.
+         * @param id Identificador único.
+         * @param username Nombre de usuario.
+         * @param email Correo electrónico.
+         * @param password Contraseña.
+         * @param walletAddress Dirección de la wallet de Bitcoin.
+         */
+        public User(int id, string username, string email, string password, string walletAddress)
         {
+            Id = id;
+            Username = username ?? throw new ArgumentNullException(nameof(username));
             Email = email ?? throw new ArgumentNullException(nameof(email));
-            FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
-            LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
-            Age = age;
             Password = password ?? throw new ArgumentNullException(nameof(password));
-            IsSeller = false;
-            SellerInfo = null;
-            PurchaseHistory = new List<Book>();
+            WalletAddress = walletAddress ?? throw new ArgumentNullException(nameof(walletAddress));
         }
 
-        //**@brief # Metodos.
-
-        //**@brief Verificar contraseña.
+        /**
+         * @brief Verifica si la contraseña ingresada coincide con la almacenada.
+         * @param password Contraseña a verificar.
+         * @return true si coincide, false en caso contrario.
+         */
         public bool VerifyPassword(string password)
         {
             return Password == password;
         }
 
-        //**@brief Cambiar contraseña.
+        /**
+         * @brief Cambia la contraseña del usuario.
+         * @param actualPassword Contraseña actual.
+         * @param newPassword Nueva contraseña.
+         * @throws UnauthorizedAccessException si la contraseña actual no coincide.
+         */
         public void ChangePassword(string actualPassword, string newPassword)
         {
             if (!VerifyPassword(actualPassword))
                 throw new UnauthorizedAccessException("La contraseña actual no coincide.");
 
             Password = newPassword ?? throw new ArgumentNullException(nameof(newPassword));
-        }
-
-        //**@brief Activar rol de vendedor.
-        public void ActivateSellerRole(SellerInfo info)
-        {
-            IsSeller = true;
-            SellerInfo = info;
         }
     }
 }

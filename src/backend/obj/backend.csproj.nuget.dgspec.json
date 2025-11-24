@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\javie\\OneDrive\\Documentos\\GitHub\\software-project\\src\\backend\\backend.csproj": {}
+    "C:\\Users\\javie\\OneDrive\\Documentos\\GitHub\\ReadHub\\src\\backend\\backend.csproj": {}
   },
   "projects": {
-    "C:\\Users\\javie\\OneDrive\\Documentos\\GitHub\\software-project\\src\\backend\\backend.csproj": {
+    "C:\\Users\\javie\\OneDrive\\Documentos\\GitHub\\ReadHub\\src\\backend\\backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\javie\\OneDrive\\Documentos\\GitHub\\software-project\\src\\backend\\backend.csproj",
+        "projectUniqueName": "C:\\Users\\javie\\OneDrive\\Documentos\\GitHub\\ReadHub\\src\\backend\\backend.csproj",
         "projectName": "backend",
-        "projectPath": "C:\\Users\\javie\\OneDrive\\Documentos\\GitHub\\software-project\\src\\backend\\backend.csproj",
+        "projectPath": "C:\\Users\\javie\\OneDrive\\Documentos\\GitHub\\ReadHub\\src\\backend\\backend.csproj",
         "packagesPath": "C:\\Users\\javie\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\javie\\OneDrive\\Documentos\\GitHub\\software-project\\src\\backend\\obj\\",
+        "outputPath": "C:\\Users\\javie\\OneDrive\\Documentos\\GitHub\\ReadHub\\src\\backend\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\javie\\AppData\\Roaming\\NuGet\\NuGet.Config",

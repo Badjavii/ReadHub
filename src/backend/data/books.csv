@@ -1,0 +1,21 @@
+id,userId,title,description,author,publisher,year,coverImageUrl,priceBTC,quantity
+1,1,Introducción a la Programación,"Libro básico de programación en C#.",John Doe,TechPress,2020,https://storage.googleapis.com/readhub/csharp_intro.jpg,0.0025,10
+2,2,Quantum Computing 101,"Fundamentos de la computación cuántica.",Alice Smith,FutureBooks,2021,https://storage.googleapis.com/readhub/quantum101.jpg,0.0050,7
+3,3,Física Moderna,"Conceptos clave de la física contemporánea.",Carlos Pérez,UniBooks,2019,https://storage.googleapis.com/readhub/fisica_moderna.jpg,0.0032,12
+4,4,Historia de la Literatura,"Recorrido por las obras más influyentes.",María Gómez,LitHouse,2018,https://storage.googleapis.com/readhub/literatura_historia.jpg,0.0018,5
+5,1,Algoritmos Avanzados,"Estructuras de datos y algoritmos complejos.",Luis Fernández,CodePress,2022,https://storage.googleapis.com/readhub/algoritmos.jpg,0.0040,8
+6,2,Machine Learning Essentials,"Introducción práctica al aprendizaje automático.",Sophia Lee,AIWorks,2021,https://storage.googleapis.com/readhub/ml_essentials.jpg,0.0065,6
+7,3,Astrofísica Básica,"Exploración del universo y sus leyes.",Miguel Torres,SpaceBooks,2020,https://storage.googleapis.com/readhub/astrofisica.jpg,0.0048,9
+8,4,Historia del Arte,"Desde el Renacimiento hasta el arte moderno.",Laura Méndez,ArtHouse,2017,https://storage.googleapis.com/readhub/arte_historia.jpg,0.0020,4
+9,1,Criptografía Moderna,"Seguridad y cifrado en sistemas digitales.",David Kim,CyberPress,2022,https://storage.googleapis.com/readhub/criptografia.jpg,0.0055,11
+10,2,Redes Neuronales,"Teoría y práctica de deep learning.",Emma Johnson,NeuroBooks,2023,https://storage.googleapis.com/readhub/redes_neuronales.jpg,0.0072,7
+11,3,Electrodinámica,"Principios de electricidad y magnetismo.",José Ramírez,PhysicsWorld,2019,https://storage.googleapis.com/readhub/electrodinamica.jpg,0.0030,10
+12,4,Historia de Venezuela,"Un recorrido por la historia nacional.",Andrés Bello,PatriaPress,2016,https://storage.googleapis.com/readhub/venezuela_historia.jpg,0.0028,6
+13,1,Programación Funcional,"Conceptos de programación en Haskell y F#.",Clara Ruiz,CodeHouse,2020,https://storage.googleapis.com/readhub/funcional.jpg,0.0042,8
+14,2,Blockchain Basics,"Fundamentos de la tecnología blockchain.",Mark Evans,FutureChain,2021,https://storage.googleapis.com/readhub/blockchain.jpg,0.0060,9
+15,3,Mecánica Cuántica,"Principios de la teoría cuántica.",Ana López,QuantumPress,2018,https://storage.googleapis.com/readhub/mecanica_cuantica.jpg,0.0047,5
+16,4,Literatura Latinoamericana,"Autores y obras representativas.",Julio Cortázar,LitHouse,2015,https://storage.googleapis.com/readhub/literatura_latam.jpg,0.0023,7
+17,1,Ingeniería de Software,"Buenas prácticas y patrones de diseño.",Carlos Díaz,SoftPress,2022,https://storage.googleapis.com/readhub/software.jpg,0.0058,12
+18,2,Inteligencia Artificial,"Historia y aplicaciones de la IA.",María Silva,AIWorks,2020,https://storage.googleapis.com/readhub/ia.jpg,0.0069,10
+19,3,Termodinámica,"Principios de energía y calor.",Pedro González,PhysicsWorld,2019,https://storage.googleapis.com/readhub/termodinamica.jpg,0.0034,8
+20,4,Poesía Universal,"Selección de poemas clásicos y modernos.",Gabriela Mistral,LitHouse,2014,https://storage.googleapis.com/readhub/poesia.jpg,0.0015,6
