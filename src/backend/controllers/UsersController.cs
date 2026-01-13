@@ -1,33 +1,47 @@
 using Microsoft.AspNetCore.Mvc;
 using backend.models;
+using backend.dto;
 using backend.services;
-using backend.repositories;
 
 namespace backend.controllers
 {
     /**
-     * @class UserController
+     * @class UsersController
      * @brief Controlador HTTP para gestionar operaciones relacionadas con usuarios.
      *
-     * Expone endpoints para registrar compradores, vendedores, consultar perfiles y login.
+     * Expone endpoints REST para registrar y consultar perfiles de usuario.
      */
     [ApiController]
-    [Route("api/user")]
-    public class UserController : ControllerBase
+    [Route("api/users")]
+    public class UsersController : ControllerBase
     {
-        private readonly UserService _service = new UserService();
-        private readonly BookRepository _bookRepository = BookRepository.Instance;
+        /// @brief Servicio encargado de la lógica de negocio de usuarios.
+        private readonly UserService _service;
 
         /**
-         * @brief Endpoint para registrar un nuevo comprador.
+         * @brief Constructor del controlador.
+         * @param service Instancia de UserService inyectada por el contenedor de dependencias.
          */
-        [HttpPost("register-buyer")]
-        public IActionResult RegisterBuyer([FromBody] UserDTO dto)
+        public UsersController(UserService service)
         {
+            _service = service;
+        }
+
+        /**
+         * @brief Registra un nuevo usuario en el sistema.
+         * @param user Objeto User recibido desde el frontend.
+         * @return Usuario creado con código 201 o error si ya existe.
+         */
+        [HttpPost]
+        public IActionResult RegisterUser([FromBody] User user)
+        {
+            if (user == null)
+                return BadRequest(new { error = "El usuario no puede ser nulo." });
+
             try
             {
-                User user = _service.RegisterBuyer(dto);
-                return Ok(user);
+                var created = _service.Register(user);
+                return CreatedAtAction(nameof(GetUserById), new { id = created.Id }, created);
             }
             catch (Exception ex)
             {
@@ -36,31 +50,15 @@ namespace backend.controllers
         }
 
         /**
-         * @brief Endpoint para registrar un nuevo vendedor.
+         * @brief Obtiene un usuario por su ID.
+         * @param id Identificador único del usuario.
+         * @return Usuario encontrado o error 404 si no existe.
          */
-        [HttpPost("register-seller")]
-        public IActionResult RegisterSeller([FromBody] UserDTO dto, [FromQuery] string bankName, [FromQuery] string accountNumber, [FromQuery] string phoneNumber)
+        [HttpGet("{id}")]
+        public IActionResult GetUserById(int id)
         {
-            try
-            {
-                var catalog = _bookRepository.GetCatalogBySellerEmail(dto.Email);
-                var sellerInfo = new SellerInfo(bankName, accountNumber, phoneNumber, catalog, new List<float>());
-                User user = _service.RegisterSeller(dto, sellerInfo);
-                return Ok(user);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-        }
+            var user = _service.GetUserById(id);
 
-        /**
-         * @brief Endpoint para consultar un usuario por correo.
-         */
-        [HttpGet("get")]
-        public IActionResult GetUser([FromQuery] string email)
-        {
-            User? user = _service.GetUserByEmail(email);
             if (user == null)
                 return NotFound(new { error = "Usuario no encontrado." });
 
@@ -68,41 +66,44 @@ namespace backend.controllers
         }
 
         /**
-         * @brief Endpoint para obtener el historial de compras de un usuario.
+         * @brief Obtiene un usuario por su correo electrónico.
+         * @param email Correo del usuario.
+         * @return Usuario encontrado o error 404 si no existe.
          */
-        [HttpGet("purchase-history")]
-        public IActionResult GetPurchaseHistory([FromQuery] string email)
+        [HttpGet("by-email")]
+        public IActionResult GetUserByEmail([FromQuery] string email)
         {
-            var books = _bookRepository.GetPurchaseHistoryByBuyerEmail(email);
-            if (books.Count == 0)
-                return NotFound(new { error = "No se encontraron compras para este usuario." });
-
-            return Ok(books);
-        }
-
-        /**
-         * @brief Endpoint para login de usuario con validación de contraseña.
-         */
-        [HttpPost("login")]
-        public IActionResult Login([FromQuery] string email, [FromQuery] string password)
-        {
-            User? user = _service.GetUserByEmail(email);
+            var user = _service.GetUserByEmail(email);
 
             if (user == null)
                 return NotFound(new { error = "Usuario no encontrado." });
 
-            if (!user.VerifyPassword(password))
-                return Unauthorized(new { error = "Acceso denegado: contraseña incorrecta." });
-
-            return Ok(new
-            {
-                message = "Login exitoso.",
-                email = user.Email,
-                firstName = user.FirstName,
-                lastName = user.LastName,
-                isSeller = user.IsSeller,
-                purchaseHistory = user.PurchaseHistory
-            });
+            return Ok(user);
         }
+
+        /**
+         * @brief Elimina un usuario del sistema.
+         * @param id Identificador del usuario.
+         * @return Mensaje de éxito o error 404 si no existe.
+         */
+        [HttpDelete("{id}")]
+        public IActionResult DeleteUser(int id)
+        {
+            bool deleted = _service.DeleteUser(id);
+
+            if (!deleted)
+                return NotFound(new { error = "Usuario no encontrado." });
+
+            return Ok(new { message = "Usuario eliminado correctamente." });
+        }
+
+        [HttpPost("login")]
+        public IActionResult Login([FromBody] LoginRequest request)
+        {
+            bool isValid = _service.ValidateCredentials(request.Email, request.Password);
+
+            return Ok(new { success = isValid });
+        }
+
     }
 }

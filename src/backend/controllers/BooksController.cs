@@ -8,18 +8,30 @@ namespace backend.controllers
      * @class BooksController
      * @brief Controlador HTTP para gestionar operaciones relacionadas con libros.
      *
-     * Expone endpoints para consultar, agregar, eliminar y buscar libros.
+     * Expone endpoints REST para registrar y consultar libros dentro del sistema.
+     * Se comunica con BookService, quien maneja la lógica de negocio.
      */
     [ApiController]
     [Route("api/books")]
     public class BooksController : ControllerBase
     {
-        private readonly BookService _service = new BookService();
+        /// @brief Servicio encargado de la lógica de negocio de libros.
+        private readonly BookService _service;
 
         /**
-         * @brief Devuelve todos los libros.
+         * @brief Constructor del controlador.
+         * @param service Instancia de BookService inyectada por el contenedor de dependencias.
          */
-        [HttpGet("all")]
+        public BooksController(BookService service)
+        {
+            _service = service;
+        }
+
+        /**
+         * @brief Obtiene todos los libros registrados.
+         * @return Lista de libros en formato JSON.
+         */
+        [HttpGet]
         public IActionResult GetBooks()
         {
             var books = _service.GetBooks();
@@ -27,37 +39,14 @@ namespace backend.controllers
         }
 
         /**
-         * @brief Agrega un nuevo libro.
+         * @brief Obtiene un libro por su ID.
+         * @param id Identificador único del libro.
+         * @return Libro encontrado o error 404 si no existe.
          */
-        [HttpPost("add")]
-        public IActionResult AddBook([FromBody] Book book)
+        [HttpGet("{id}")]
+        public IActionResult GetBookById(int id)
         {
-            if (book == null) return BadRequest(new { error = "El libro no puede ser nulo." });
-
-            var addedBook = _service.AddBook(book);
-            return CreatedAtAction(nameof(GetBooks), new { id = addedBook.Id }, addedBook);
-        }
-
-        /**
-         * @brief Elimina un libro por ID.
-         */
-        [HttpDelete("remove/{id}")]
-        public IActionResult RemoveBook(int id)
-        {
-            bool removed = _service.RemoveBook(id);
-            if (!removed)
-                return NotFound(new { error = "Libro no encontrado." });
-
-            return Ok(new { message = "Libro eliminado correctamente." });
-        }
-
-        /**
-         * @brief Busca un libro por ID.
-         */
-        [HttpGet("search/{id}")]
-        public IActionResult SearchBook(int id)
-        {
-            var book = _service.SearchBook(id);
+            var book = _service.GetBookById(id);
             if (book == null)
                 return NotFound(new { error = "Libro no encontrado." });
 
@@ -65,29 +54,34 @@ namespace backend.controllers
         }
 
         /**
-         * @brief Devuelve el catálogo de un vendedor.
+         * @brief Registra un nuevo libro en el sistema.
+         * @param book Objeto Book recibido desde el frontend.
+         * @return Libro creado con código 201.
          */
-        [HttpGet("catalog")]
-        public IActionResult GetCatalogBySeller([FromQuery] string sellerEmail)
+        [HttpPost]
+        public IActionResult AddBook([FromBody] Book book)
         {
-            var catalog = _service.GetCatalogBySeller(sellerEmail);
-            if (catalog.Count == 0)
-                return NotFound(new { error = "No se encontraron libros para este vendedor." });
+            if (book == null)
+                return BadRequest(new { error = "El libro no puede ser nulo." });
 
-            return Ok(catalog);
+            var added = _service.AddBook(book);
+            return CreatedAtAction(nameof(GetBookById), new { id = added.Id }, added);
         }
 
         /**
-         * @brief Devuelve el historial de compras de un comprador.
+         * @brief Elimina un libro por su ID.
+         * @param id Identificador del libro.
+         * @return Mensaje de éxito o error 404 si no existe.
          */
-        [HttpGet("purchase-history")]
-        public IActionResult GetPurchaseHistory([FromQuery] string buyerEmail)
+        [HttpDelete("{id}")]
+        public IActionResult DeleteBook(int id)
         {
-            var history = _service.GetPurchaseHistory(buyerEmail);
-            if (history.Count == 0)
-                return NotFound(new { error = "No se encontraron compras para este usuario." });
+            bool deleted = _service.DeleteBook(id);
 
-            return Ok(history);
+            if (!deleted)
+                return NotFound(new { error = "Libro no encontrado." });
+
+            return Ok(new { message = "Libro eliminado correctamente." });
         }
     }
 }

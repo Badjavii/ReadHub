@@ -15,31 +15,31 @@ namespace backend.models
         /**
          * @brief Identificador único del usuario en el sistema.
          */
-        [JsonPropertyName("_id")]
+        //[JsonPropertyName("_id")]
         public int Id { get; set; }
 
         /** 
          * @brief Nombre de usuario único dentro del sistema.
          */
-        [JsonPropertyName("_username")]
+        //[JsonPropertyName("_username")]
         public string Username { get; set; }
 
         /** 
          * @brief Correo electrónico del usuario.
          */
-        [JsonPropertyName("_email")]
+        //[JsonPropertyName("_email")]
         public string Email { get; set; }
 
         /**
          * @brief Dirección de la wallet de Bitcoin asociada al usuario.
          */
-        [JsonPropertyName("_walletAddress")]
+        //[JsonPropertyName("_walletAddress")]
         public string WalletAddress { get; set; }
 
         /**
          * @brief Contraseña privada del usuario (no accesible directamente).
          */
-        private string Password { get; set; }
+        public string Password { get; set; }
 
         /**
          * @brief Constructor básico para inicializar un usuario.

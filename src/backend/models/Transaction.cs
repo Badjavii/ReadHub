@@ -15,37 +15,37 @@ namespace backend.models
         /**
          * @brief Identificador único de la transacción.
          */
-        [JsonPropertyName("_id")]
+        //[JsonPropertyName("_id")]
         public int Id { get; set; }
 
         /**
          * @brief Identificador del usuario comprador.
          */
-        [JsonPropertyName("_buyerUserId")]
+        //[JsonPropertyName("_buyerUserId")]
         public int BuyerUserId { get; set; }
 
         /**
          * @brief Identificador del usuario vendedor.
          */
-        [JsonPropertyName("_sellerUserId")]
+        //[JsonPropertyName("_sellerUserId")]
         public int SellerUserId { get; set; }
 
         /**
          * @brief Identificador del libro asociado a la transacción.
          */
-        [JsonPropertyName("_bookId")]
+        //[JsonPropertyName("_bookId")]
         public int BookId { get; set; }
 
         /**
          * @brief Monto de la transacción en Bitcoin.
          */
-        [JsonPropertyName("_amountBTC")]
+        //[JsonPropertyName("_amountBTC")]
         public decimal AmountBTC { get; set; }
 
         /**
          * @brief Fecha en la que se realizó la transacción.
          */
-        [JsonPropertyName("_date")]
+        //[JsonPropertyName("_date")]
         public DateTime Date { get; set; }
 
         /**

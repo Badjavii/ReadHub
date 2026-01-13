@@ -1,3 +1,7 @@
+-- Esquema de la base de datos para ReadHub
+-- Autor: badjavii
+-- Script: mysqlsh --sql -u root -p < schema.sql
+
 -- Crear la base de datos
 CREATE DATABASE IF NOT EXISTS readhub;
 USE readhub;
@@ -38,3 +42,22 @@ CREATE TABLE IF NOT EXISTS transactions (
     FOREIGN KEY (sellerUserId) REFERENCES users(id),  -- Relación con vendedor
     FOREIGN KEY (bookId) REFERENCES books(id)         -- Relación con libro
 );
+
+-- Importar CSV (rutas relativas) 
+LOAD DATA LOCAL INFILE 'users.csv' 
+INTO TABLE users 
+FIELDS TERMINATED BY ',' ENCLOSED BY '"' 
+LINES TERMINATED BY '\n' 
+IGNORE 1 ROWS; 
+
+LOAD DATA LOCAL INFILE 'books.csv' 
+INTO TABLE books 
+FIELDS TERMINATED BY ',' ENCLOSED BY '"' 
+LINES TERMINATED BY '\n' 
+IGNORE 1 ROWS; 
+
+LOAD DATA LOCAL INFILE 'transactions.csv' 
+INTO TABLE transactions 
+FIELDS TERMINATED BY ',' ENCLOSED BY '"' 
+LINES TERMINATED BY '\n' 
+IGNORE 1 ROWS;

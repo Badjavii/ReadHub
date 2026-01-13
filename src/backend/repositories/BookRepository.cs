@@ -1,131 +1,203 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using MySql.Data.MySqlClient;
 using backend.models;
-using System.Reflection;
 
 namespace backend.repositories
 {
     /**
      * @class BookRepository
-     * @brief Repositorio que gestiona la colección de libros en Booksy.
+     * @brief Repositorio encargado de gestionar la persistencia de libros en MySQL.
      *
-     * Implementa el patrón Singleton. Carga los datos desde un archivo JSON al iniciar
-     * y permite agregar, eliminar, buscar y exportar libros.
+     * Esta clase actúa como capa de acceso a datos (DAO/Repository Pattern).
+     * Se conecta a la base de datos mediante MySqlConnection y ejecuta consultas SQL
+     * para obtener, insertar o eliminar registros de la tabla `books`.
+     *
+     * No mantiene estado interno ni listas en memoria. Cada operación abre su propia
+     * conexión y devuelve objetos Book completamente construidos.
      */
     public class BookRepository
     {
-        // Instancia única del repositorio (Singleton).
-        private static readonly BookRepository _instance = new BookRepository();
-
-        // Ruta del archivo JSON que contiene los datos de los libros.
-        private readonly string _jsonPath = @"data/book.json";
-
-        // Lista interna de libros cargados desde el archivo.
-        private List<Book> _books;
-
-        // Constructor privado. Llama al método Load() para inicializar la lista.
-        private BookRepository()
-        {
-            _books = new List<Book>();
-            Load();
-        }
-
-        // Obtiene la instancia única del repositorio.
-        public static BookRepository Instance => _instance;
+        /// @brief Cadena de conexión a la base de datos MySQL.
+        private readonly string _connectionString;
 
         /**
-         * @brief Carga los datos de libros desde el archivo JSON.
-         *
-         * Lee cada objeto, extrae sus atributos y crea instancias de Book.
+         * @brief Constructor del repositorio.
+         * @param connectionString Cadena de conexión proporcionada por configuración.
          */
-        private void Load()
+        public BookRepository(string connectionString)
         {
-            if (!File.Exists(_jsonPath)) return;
+            _connectionString = connectionString;
+        }
 
-            string json = File.ReadAllText(_jsonPath);
-            var rawBooks = JsonSerializer.Deserialize<List<JsonElement>>(json);
+        /**
+         * @brief Obtiene todos los libros almacenados en la base de datos.
+         *
+         * Ejecuta una consulta SELECT sobre la tabla `books` y construye una lista
+         * de objetos Book a partir de los resultados.
+         *
+         * @return Lista de libros existentes en la base de datos.
+         */
+        public List<Book> GetAll()
+        {
+            var books = new List<Book>();
 
-            if (rawBooks == null) return;
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
 
-            foreach (var element in rawBooks)
+            string query = @"SELECT id, userId, title, description, author, publisher, year, 
+                                    coverImageUrl, priceBTC, quantity 
+                             FROM books";
+
+            using var cmd = new MySqlCommand(query, connection);
+            using var reader = cmd.ExecuteReader();
+
+            while (reader.Read())
             {
-                int id = element.GetProperty("_id").GetInt32();
-                string nameBook = element.GetProperty("_nameBook").GetString() ?? string.Empty;
-                string subtitle = element.GetProperty("_subtitle").GetString() ?? string.Empty;
-                string series = element.GetProperty("_series").GetString() ?? string.Empty;
-                string author = element.GetProperty("_author").GetString() ?? string.Empty;
-                string language = element.GetProperty("_language").GetString() ?? string.Empty;
-                string publisher = element.GetProperty("_publisher").GetString() ?? string.Empty;
-                string bookCover = element.GetProperty("_bookCover").GetString() ?? string.Empty;
-                string typeBook = element.GetProperty("_typeBook").GetString() ?? string.Empty;
-                string bookVolume = element.GetProperty("_bookVolume").GetString() ?? string.Empty;
-                float bookHeight = element.GetProperty("_bookHeight").GetSingle();
-                float bookWidth = element.GetProperty("_bookWidth").GetSingle();
-                var categoryList = element.GetProperty("_categoryList").EnumerateArray().Select(c => c.GetString() ?? "").ToList();
-                int numPages = element.GetProperty("_numPages").GetInt32();
-                DateTime publishYear = element.GetProperty("_publishYear").GetDateTime();
-                float cost = element.GetProperty("_cost").GetSingle();
-                string description = element.GetProperty("_description").GetString() ?? string.Empty;
-                string buyerEmail = element.GetProperty("_buyerEmail").GetString() ?? string.Empty;
-                string sellerEmail = element.GetProperty("_sellerEmail").GetString() ?? string.Empty;
-
-                Book book = new Book(id, nameBook, subtitle, series, author, language, publisher, bookCover, typeBook, bookVolume, bookHeight, bookWidth, categoryList, numPages, publishYear, cost, description, buyerEmail, sellerEmail);
-                _books.Add(book);
+                books.Add(new Book(
+                    reader.GetInt32("id"),
+                    reader.GetInt32("userId"),
+                    reader.GetString("title"),
+                    reader.GetString("description"),
+                    reader.GetString("author"),
+                    reader.GetString("publisher"),
+                    reader.GetInt32("year"),
+                    reader.GetString("coverImageUrl"),
+                    reader.GetDecimal("priceBTC"),
+                    reader.GetInt32("quantity")
+                ));
             }
+
+            return books;
         }
 
-        // Guarda todos los libros en el archivo JSON, sobrescribiendo el contenido.
-        public void Save()
+        /**
+         * @brief Busca un libro por su identificador único.
+         *
+         * @param id Identificador del libro.
+         * @return Instancia Book si existe, o nullptr si no se encontró.
+         */
+        public Book? GetById(int id)
         {
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            string json = JsonSerializer.Serialize(_books, options);
-            File.WriteAllText(_jsonPath, json);
-        }
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
 
-        // Agrega un nuevo libro al repositorio con ID autoincremental.
-        public void AddBook(Book book)
-        {
-            int newId = _books.Count > 0 ? _books.Max(b => b.Id) + 1 : 1;
-            book.Id = newId;
-            _books.Add(book);
-            Save();
-        }
+            string query = @"SELECT id, userId, title, description, author, publisher, year, 
+                                    coverImageUrl, priceBTC, quantity 
+                             FROM books WHERE id = @id";
 
-        // Elimina un libro del repositorio usando su ID.
-        public bool RemoveBook(int id)
-        {
-            var book = _books.FirstOrDefault(b => b.Id == id);
-            if (book != null)
+            using var cmd = new MySqlCommand(query, connection);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            using var reader = cmd.ExecuteReader();
+
+            if (reader.Read())
             {
-                _books.Remove(book);
-                Save();
-                return true;
+                return new Book(
+                    reader.GetInt32("id"),
+                    reader.GetInt32("userId"),
+                    reader.GetString("title"),
+                    reader.GetString("description"),
+                    reader.GetString("author"),
+                    reader.GetString("publisher"),
+                    reader.GetInt32("year"),
+                    reader.GetString("coverImageUrl"),
+                    reader.GetDecimal("priceBTC"),
+                    reader.GetInt32("quantity")
+                );
             }
-            return false;
+
+            return null;
         }
 
-        // Busca y retorna un libro específico por ID.
-        public Book? SearchBook(int id)
+        /**
+         * @brief Obtiene todos los libros publicados por un vendedor específico.
+         *
+         * @param sellerId ID del usuario vendedor.
+         * @return Lista de libros asociados al vendedor.
+         */
+        public List<Book> GetBySeller(int sellerId)
         {
-            return _books.FirstOrDefault(b => b.Id == id);
+            var books = new List<Book>();
+
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+
+            string query = @"SELECT id, userId, title, description, author, publisher, year, 
+                                    coverImageUrl, priceBTC, quantity 
+                             FROM books WHERE userId = @sellerId";
+
+            using var cmd = new MySqlCommand(query, connection);
+            cmd.Parameters.AddWithValue("@sellerId", sellerId);
+
+            using var reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                books.Add(new Book(
+                    reader.GetInt32("id"),
+                    reader.GetInt32("userId"),
+                    reader.GetString("title"),
+                    reader.GetString("description"),
+                    reader.GetString("author"),
+                    reader.GetString("publisher"),
+                    reader.GetInt32("year"),
+                    reader.GetString("coverImageUrl"),
+                    reader.GetDecimal("priceBTC"),
+                    reader.GetInt32("quantity")
+                ));
+            }
+
+            return books;
         }
 
-        // Devuelve el catálogo de un vendedor específico (por correo).
-        public List<Book> GetCatalogBySellerEmail(string sellerEmail)
+        /**
+         * @brief Inserta un nuevo libro en la base de datos.
+         *
+         * @param book Objeto Book con los datos a insertar.
+         *
+         * @note El ID es autogenerado por MySQL.
+         */
+        public void Add(Book book)
         {
-            return _books.Where(b => b.SellerEmail.Equals(sellerEmail, StringComparison.OrdinalIgnoreCase)).ToList();
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+
+            string query = @"INSERT INTO books 
+                            (userId, title, description, author, publisher, year, coverImageUrl, priceBTC, quantity)
+                             VALUES (@userId, @title, @description, @author,
+                                     @publisher, @year, @coverImageUrl, @priceBTC, @quantity)";
+
+            using var cmd = new MySqlCommand(query, connection);
+
+            cmd.Parameters.AddWithValue("@userId", book.UserId);
+            cmd.Parameters.AddWithValue("@title", book.Title);
+            cmd.Parameters.AddWithValue("@description", book.Description);
+            cmd.Parameters.AddWithValue("@author", book.Author);
+            cmd.Parameters.AddWithValue("@publisher", book.Publisher);
+            cmd.Parameters.AddWithValue("@year", book.Year);
+            cmd.Parameters.AddWithValue("@coverImageUrl", book.CoverImageUrl);
+            cmd.Parameters.AddWithValue("@priceBTC", book.PriceBTC);
+            cmd.Parameters.AddWithValue("@quantity", book.Quantity);
+
+            cmd.ExecuteNonQuery();
         }
 
-        public List<Book> GetPurchaseHistoryByBuyerEmail(string buyerEmail)
+        /**
+         * @brief Elimina un libro de la base de datos.
+         *
+         * @param id Identificador del libro a eliminar.
+         * @return true si se eliminó correctamente, false si no existía.
+         */
+        public bool Delete(int id)
         {
-            return _books.Where(b => b.BuyerEmail != null && b.BuyerEmail.Equals(buyerEmail, StringComparison.OrdinalIgnoreCase)).ToList();
-        }
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
 
+            string query = "DELETE FROM books WHERE id = @id";
 
-        // Devuelve la lista completa de libros.
-        public List<Book> ReturnBooks()
-        {
-            return _books;
+            using var cmd = new MySqlCommand(query, connection);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            return cmd.ExecuteNonQuery() > 0;
         }
     }
 }

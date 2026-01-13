@@ -15,61 +15,61 @@ namespace backend.models
         /**
          * @brief Identificador único del libro en el sistema.
          */
-        [JsonPropertyName("_id")]
+        //[JsonPropertyName("_id")]
         public int Id { get; set; }
 
         /**
          * @brief Identificador del usuario que está vendiendo el libro.
          */
-        [JsonPropertyName("_userId")]
+        //[JsonPropertyName("_userId")]
         public int UserId { get; set; }
 
         /** 
          * @brief Título del libro.
          */
-        [JsonPropertyName("_title")]
+        //[JsonPropertyName("_title")]
         public string Title { get; set; }
 
         /** 
          * @brief Descripción breve del libro.
          */
-        [JsonPropertyName("_description")]
+        //[JsonPropertyName("_description")]
         public string Description { get; set; }
 
         /** 
          * @brief Nombre del autor.
          */
-        [JsonPropertyName("_author")]
+        //[JsonPropertyName("_author")]
         public string Author { get; set; }
 
         /** 
          * @brief Editorial del libro.
          */
-        [JsonPropertyName("_publisher")]
+        //[JsonPropertyName("_publisher")]
         public string Publisher { get; set; }
 
         /** 
          * @brief Año de publicación.
          */
-        [JsonPropertyName("_year")]
+        //[JsonPropertyName("_year")]
         public int Year { get; set; }
 
         /** 
          * @brief URL de la imagen de portada almacenada en Google Cloud Storage.
          */
-        [JsonPropertyName("_coverImageUrl")]
+        //[JsonPropertyName("_coverImageUrl")]
         public string CoverImageUrl { get; set; }
 
         /**
          * @brief Precio del libro expresado en Bitcoin.
          */
-        [JsonPropertyName("_priceBTC")]
+        //[JsonPropertyName("_priceBTC")]
         public decimal PriceBTC { get; set; }
 
         /**
          * @brief Cantidad de unidades disponibles de este libro.
          */
-        [JsonPropertyName("_quantity")]
+        //[JsonPropertyName("_quantity")]
         public int Quantity { get; set; }
 
         /**

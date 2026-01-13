@@ -7,59 +7,72 @@ namespace backend.services
      * @class BookService
      * @brief Servicio que encapsula la lógica de negocio relacionada con libros.
      *
-     * Permite consultar, agregar, eliminar y buscar libros.
+     * Esta clase actúa como intermediaria entre los controladores y el repositorio.
+     * Se encarga de coordinar operaciones de negocio y delegar el acceso a datos
+     * al BookRepository.
      */
     public class BookService
     {
-        private readonly BookRepository _repository = BookRepository.Instance;
+        /// @brief Repositorio encargado de la persistencia de libros.
+        private readonly BookRepository _repository;
 
         /**
-         * @brief Devuelve todos los libros.
+         * @brief Constructor del servicio.
+         * @param repository Instancia de BookRepository inyectada desde configuración.
          */
-        public List<Book> GetBooks()
+        public BookService(BookRepository repository)
         {
-            return _repository.ReturnBooks();
+            _repository = repository;
         }
 
         /**
-         * @brief Agrega un nuevo libro al repositorio.
+         * @brief Obtiene todos los libros registrados.
+         * @return Lista completa de libros.
+         */
+        public List<Book> GetBooks()
+        {
+            return _repository.GetAll();
+        }
+
+        /**
+         * @brief Busca un libro por su ID.
+         * @param id Identificador único del libro.
+         * @return Instancia Book si existe, nullptr si no se encontró.
+         */
+        public Book? GetBookById(int id)
+        {
+            return _repository.GetById(id);
+        }
+
+        /**
+         * @brief Obtiene todos los libros publicados por un vendedor.
+         * @param sellerId ID del usuario vendedor.
+         * @return Lista de libros asociados al vendedor.
+         */
+        public List<Book> GetBooksBySeller(int sellerId)
+        {
+            return _repository.GetBySeller(sellerId);
+        }
+
+        /**
+         * @brief Agrega un nuevo libro al sistema.
+         * @param book Objeto Book con los datos a registrar.
+         * @return El libro recién agregado.
          */
         public Book AddBook(Book book)
         {
-            _repository.AddBook(book);
+            _repository.Add(book);
             return book;
         }
 
         /**
-         * @brief Elimina un libro por ID.
+         * @brief Elimina un libro por su ID.
+         * @param id Identificador del libro.
+         * @return true si se eliminó correctamente, false si no existía.
          */
-        public bool RemoveBook(int id)
+        public bool DeleteBook(int id)
         {
-            return _repository.RemoveBook(id);
-        }
-
-        /**
-         * @brief Busca un libro por ID.
-         */
-        public Book? SearchBook(int id)
-        {
-            return _repository.SearchBook(id);
-        }
-
-        /**
-         * @brief Devuelve el catálogo de un vendedor específico.
-         */
-        public List<Book> GetCatalogBySeller(string sellerEmail)
-        {
-            return _repository.GetCatalogBySellerEmail(sellerEmail);
-        }
-
-        /**
-         * @brief Devuelve el historial de compras de un comprador específico.
-         */
-        public List<Book> GetPurchaseHistory(string buyerEmail)
-        {
-            return _repository.GetPurchaseHistoryByBuyerEmail(buyerEmail);
+            return _repository.Delete(id);
         }
     }
 }

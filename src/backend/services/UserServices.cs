@@ -7,96 +7,101 @@ namespace backend.services
      * @class UserService
      * @brief Servicio que encapsula la lógica de negocio relacionada con usuarios.
      *
-     * Aplica reglas de negocio: solo correos UCAB, no duplicar correos,
-     * y manejo especial al registrar vendedores.
+     * Esta clase actúa como intermediaria entre los controladores y el repositorio.
+     * Valida reglas de negocio como evitar duplicados y asegurar correos válidos.
      */
     public class UserService
     {
-        private readonly UserRepository _repository = UserRepository.Instance;
+        /// @brief Repositorio encargado de la persistencia de usuarios.
+        private readonly UserRepository _repository;
 
         /**
-         * @brief Registra un nuevo comprador en el sistema.
-         * @param dto Objeto DTO con los datos del comprador.
-         * @return Instancia User creada.
-         * @exception Exception Si el correo no es UCAB o ya está registrado.
+         * @brief Constructor del servicio.
+         * @param repository Instancia de UserRepository inyectada desde configuración.
          */
-        public User RegisterBuyer(UserDTO dto)
+        public UserService(UserRepository repository)
         {
-            ValidateUcabEmail(dto.Email);
+            _repository = repository;
+        }
 
-            if (_repository.ReturnUserByEmail(dto.Email) != null)
+        /**
+         * @brief Registra un nuevo usuario en el sistema.
+         *
+         * Valida que el correo no esté registrado previamente y que cumpla
+         * con las reglas de negocio definidas.
+         *
+         * @param user Instancia User con los datos del usuario.
+         * @return El usuario recién registrado.
+         * @exception Exception Si el correo ya está registrado o es inválido.
+         */
+        public User Register(User user)
+        {
+            ValidateEmail(user.Email);
+
+            if (_repository.GetByEmail(user.Email) != null)
                 throw new Exception("Ya existe un usuario con ese correo.");
 
-            User user = new User(dto.Email, dto.FirstName, dto.LastName, dto.Age, dto.Password);
-            _repository.AddBuyer(user);
-            _repository.Save();
+            // MySQL generará el ID automáticamente
+            _repository.Add(user);
             return user;
         }
 
         /**
-         * @brief Registra un nuevo vendedor en el sistema.
-         * @param dto Objeto DTO con los datos del vendedor.
-         * @param info Información adicional del vendedor (SellerInfo).
-         * @return Instancia User creada o actualizada.
-         * @exception Exception Si el correo no es UCAB o ya está registrado como vendedor.
-         */
-        public User RegisterSeller(UserDTO dto, SellerInfo info)
-        {
-            ValidateUcabEmail(dto.Email);
-
-            var existingUser = _repository.ReturnUserByEmail(dto.Email);
-
-            if (existingUser != null)
-            {
-                if (existingUser.IsSeller)
-                    throw new Exception("Ya existe un vendedor con ese correo.");
-
-                // Si existe como comprador, cambiar rol a vendedor
-                existingUser.ActivateSellerRole(info);
-                _repository.Save();
-                return existingUser;
-            }
-
-            // Si no existe, crear nuevo usuario vendedor
-            User user = new User(dto.Email, dto.FirstName, dto.LastName, dto.Age, dto.Password);
-            user.ActivateSellerRole(info);
-            _repository.AddSeller(user, info);
-            _repository.Save();
-            return user;
-        }
-
-        /**
-         * @brief Consulta un usuario por correo.
+         * @brief Obtiene un usuario por su correo electrónico.
          * @param email Correo del usuario.
-         * @return Instancia User si se encuentra; null si no existe.
+         * @return Instancia User si existe, nullptr si no se encontró.
          */
         public User? GetUserByEmail(string email)
         {
-            return _repository.ReturnUserByEmail(email);
+            return _repository.GetByEmail(email);
         }
 
         /**
-         * @brief Valida que el correo pertenezca al dominio UCAB.
-         * @param email Correo a validar.
-         * @exception Exception Si el correo no es UCAB.
+         * @brief Obtiene un usuario por su ID.
+         * @param id Identificador único del usuario.
+         * @return Instancia User si existe, nullptr si no se encontró.
          */
-        private void ValidateUcabEmail(string email)
+        public User? GetUserById(int id)
         {
-            if (!email.EndsWith("ucab.edu.ve", StringComparison.OrdinalIgnoreCase))
-                throw new Exception("Solo se permiten correos UCAB.");
+            return _repository.GetById(id);
         }
-    }
 
-    /**
-     * @class UserDTO
-     * @brief Objeto de transferencia de datos para registrar usuarios.
-     */
-    public class UserDTO
-    {
-        public required string Email { get; set; }
-        public required string FirstName { get; set; }
-        public required string LastName { get; set; }
-        public required int Age { get; set; }
-        public required string Password { get; set; }
+        /**
+         * @brief Elimina un usuario del sistema.
+         * @param id Identificador del usuario.
+         * @return true si se eliminó correctamente, false si no existía.
+         */
+        public bool DeleteUser(int id)
+        {
+            return _repository.Delete(id);
+        }
+
+        /**
+         * @brief Valida que el correo tenga un formato correcto.
+         * @param email Correo a validar.
+         * @exception Exception Si el correo no es válido.
+         */
+        private void ValidateEmail(string email)
+        {
+            if (!email.Contains("@") || !email.Contains("."))
+                throw new Exception("Correo inválido.");
+        }
+
+        /**
+         * @brief Valida las credenciales de un usuario.
+         * @param email Correo del usuario.
+         * @param password Contraseña del usuario.
+         * @return true si las credenciales son válidas, false en caso contrario.
+         */
+        public bool ValidateCredentials(string email, string password)
+        {
+            var user = _repository.GetByEmail(email);
+
+            if (user == null)
+                return false;
+
+            return user.VerifyPassword(password);
+        }
+
     }
 }
