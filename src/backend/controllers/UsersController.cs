@@ -72,7 +72,7 @@ namespace backend.controllers
          */
         [HttpGet("by-email")]
         public IActionResult GetUserByEmail([FromQuery] string email)
-        {
+                        {
             var user = _service.GetUserByEmail(email);
 
             if (user == null)
